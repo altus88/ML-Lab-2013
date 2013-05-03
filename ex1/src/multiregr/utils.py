@@ -94,7 +94,7 @@ def addOnes(X):
 
 def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda_,method):
     """
-    Performs the batch gradient descent to learn w
+    Performs the batch learning
     alpha is the learning parameter
     w is  nfeatures x nclasses
     """	
@@ -149,6 +149,13 @@ def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda
         trFunction = stGrad
     elif (method == 'l_bfgs'):
         trFunction = l_bfgs_b
+        
+        
+    maxNumberVerrorIncrease = 10 #maximum number validation error increase        
+    vErrorInc = 0
+    
+    bestVerr = np.Inf
+    w_best = np.zeros_like(w_)       
     
     for i in range(1,num_iters+1):
         for j in range(0,m):
@@ -182,12 +189,28 @@ def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda
             pl2.plot(range(0,i),error_validation[0:i], 'b')
             pl2.plot(range(0,i),error_test[0:i], 'g')
             plb.draw()
-        
+            
+        if i > 1: 
+            if  error_validation[-1] < bestVerr: #error rate is lower
+                bestVerr = error_validation[-1]
+                w_best = w_
+                if vErrorInc !=0: #zeroise counter
+                    vErrorInc = 0
+            else: #validation error is becoming worse
+                vErrorInc +=1     
+        else: #save layer and validation error on the first iterations
+            bestVerr = error_validation[0]
+            w_best = w_      
+            
+                
         print "Training error" + str(err1)
         print "Test error: "  +  str(err2)  
         print "Validation error:"  +  str(err3) 
+        if vErrorInc ==  maxNumberVerrorIncrease:
+            break
        
-    visualizeFilters(w_[1:,:])    
+    visualizeFilters(w_[1:,:]) 
+    return w_best   
   
 
 def visualizeFilters(W,fig_size=(8, 8)):

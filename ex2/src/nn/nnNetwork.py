@@ -272,23 +272,20 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
     nFeatures = np.size(X,1)-1
    
     #w_ = np.zeros(((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses,))
-    
     w_ = np.array(np.random.rand((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses))/100
     g = np.zeros_like(w_)  
       
     m = len(X_)
        
-    # Training
-    print func
-    
+       
     if func == "sigmoid":
         f = (sigmoid,sigmoidGradient)
-    elif fun == "tanh":
+    elif func == "tanh":
         f = (tanh,tanhGradient) 
     else:
-        print "Unknown activation function"
-        import sys
-        sys.exit()         
+        raise Exception("Unknown activation function")
+        #import sys
+        #sys.exit()         
     
     def rmsprop(X,y,w):
         meanSqr = np.ones_like(w)
@@ -329,11 +326,16 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
     elif method == "lbfs":   
         training = lbfs
     else:
-        print "Unkown training method"
-        import sys
-        sys.exit()    
-             
-   
+        raise Exception("Unknown training method")
+        #import sys
+        #sys.exit()    
+     
+    maxNumberVerrorIncrease = 10 #maximum number validation error increase        
+    vErrorInc = 0
+    
+    bestVerr = np.Inf
+    w_best = np.zeros_like(w_)
+      
     for i in range(1,num_iters+1):
         print "epoch: " + str(i)
         w_ = rmsprop(X_,y_,w_)
@@ -359,23 +361,39 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
         error_validation[i-1] = err2
         error_test[i-1] = err3
         
-        if i!=1:
+        if i>1:
             pl1.plot(range(0,i),cost_train[0:i], 'r')
             pl2.plot(range(0,i),error_train[0:i], 'r')
             pl2.plot(range(0,i),error_validation[0:i], 'b')
             pl2.plot(range(0,i),error_test[0:i], 'g')
             plb.draw()
-         
+            
+        
+        if i > 1: 
+            if  error_validation[-1] < bestVerr: #error rate is lower
+                bestVerr = error_validation[-1]
+                w_best = w_
+                if vErrorInc !=0: #zeroise counter
+                    vErrorInc = 0
+            else: #validation error is becoming worse
+                vErrorInc +=1     
+        else: #save layer and validation error on the first iterations
+            bestVerr = error_validation[0]
+            w_best = w_  
+               
         #elapsed_time = time.time() - start_time          
         print "Train error: " + str(err1) 
         print "Test error: " +  str(err2)  
         print "Validation error:" + str(err3)
+        
+        if vErrorInc ==  maxNumberVerrorIncrease:
+            break
         #print "elapsed time for one epoch: " +  str(elapsed_time)
     w1 = np.reshape(w_[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))    
     visualizeFilters(w1[1:,:])
     raw_input("Press ENTER to exit")    
-    return w_
+    return w_best
 
 
 
