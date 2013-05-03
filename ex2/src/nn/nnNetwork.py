@@ -6,7 +6,7 @@ Created on Apr 15, 2013
 import numpy as np
 import pylab as plb
 import time
-from scipy.optimize import fmin_bfgs  ,fmin_l_bfgs_b
+from scipy.optimize import fmin_l_bfgs_b
 from utils import *
 
 
@@ -398,7 +398,6 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
     return w_best
 
 
-
 def visualizeFilters(W,fig_size=(8, 8)):
     W = W - np.mean(W) #rescale
     l,m = np.shape(W)
@@ -440,6 +439,40 @@ def visualizeFilters(W,fig_size=(8, 8)):
     plb.tight_layout()
     plb.show(fig1)
 
+def gradientCheck():
+    
+    def cost(w):
+        return nnCostFunction(w, X, y, lambda_, f, nFeatures, hidden_layer_size, nClasses)
+    
+    def numGradient(J,w):
+        
+        e = 0.0001
+        p = np.zeros_like(w)
+        grad_ = np.zeros_like(w)
+        for i in range(np.size(w)):
+            p[i] = e
+            grad_[i] = np.divide(cost(w+p) - cost(w-p),2*e)
+            p[i] = 0
+        return grad_     
+    
+    nSamples =  1000
+    hidden_layer_size =    15
+    nFeatures = 20
+    nClasses = 10
+    
+    X = np.random.rand(nSamples,nFeatures)
+    y = np.random.randint(nClasses,size = nSamples)
+    f = (sigmoid,sigmoidGradient)
+    lambda_ = 3
+    w = np.random.rand((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses)/100
+    y = mapClasses(y)
+    X = addOnes(X)
+    
+    grad = nnGrad(w, X, y, lambda_, f, nFeatures, hidden_layer_size, nClasses)
+    #print grad
+    nmGrad = numGradient(cost(w),w)
+       
+    return np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
 
 
 

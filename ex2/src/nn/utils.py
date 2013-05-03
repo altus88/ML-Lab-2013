@@ -32,6 +32,7 @@ def softPlusGrad(x):
 def addOnes(X):
     return np.c_[np.ones(len(X)),X]
 
+
 def mapClasses(y):
     "map classes to {0,1} representation"
     u = np.unique(y);
@@ -71,3 +72,8 @@ def createBatches(X,y,batchSize):
             arrY.append(y[bEl:n2,:].reshape((res,m2)))
 
     return arrX,arrY
+
+
+
+
+

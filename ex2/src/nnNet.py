@@ -12,7 +12,7 @@ Created on Apr 30, 2013
 
 from argparse import ArgumentParser,FileType
 from nn.utils import addOnes,mapClasses
-from nn.nnNetwork import miniBatchLearning
+from nn.nnNetwork import miniBatchLearning,gradientCheck
 import cPickle,gzip
 
 #constatnts
@@ -35,6 +35,7 @@ def _argparse():
     argparse.add_argument('-hl', '--hidden_layer_size', type=int, default=DEFAULT_HIDDEN_LAYER_SIZE)
     argparse.add_argument('-af', '--activation_function', type=str, default=DEFAULT_ACTIVATION_FUNCTION)
     argparse.add_argument('-i', '--path', type=str, default=DEFAULT_PATH)
+    argparse.add_argument('-gc','--gradient_check', action='store_true', default=False)
     return argparse
 
 def train(hidden_layer_size,activation_function,alpha,num_iters,batchSize,lambda_,method,path):
@@ -76,7 +77,11 @@ def train(hidden_layer_size,activation_function,alpha,num_iters,batchSize,lambda
 
 def main(args):
     argp = _argparse().parse_args(args[1:])
-    train(argp.hidden_layer_size,argp.activation_function,argp.alpha,argp.num_iter,argp.batch_size,argp.lambda_,argp.method,argp.path)
+    if argp.gradient_check:
+        diff = gradientCheck()
+        print "The norm of the difference between the analytical and numerical gradients is " + str(diff) 
+    else:
+        train(argp.hidden_layer_size,argp.activation_function,argp.alpha,argp.num_iter,argp.batch_size,argp.lambda_,argp.method,argp.path)
     
 if __name__ == '__main__':
     from sys import argv
