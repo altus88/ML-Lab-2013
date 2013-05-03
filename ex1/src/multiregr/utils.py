@@ -92,7 +92,7 @@ def length(X):
 def addOnes(X):
     return np.c_[np.ones(length(X)),X]
 
-def miniBatchGradientDescent(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda_,method):
+def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda_,method):
     """
     Performs the batch gradient descent to learn w
     alpha is the learning parameter

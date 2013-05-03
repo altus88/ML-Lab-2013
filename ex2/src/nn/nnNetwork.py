@@ -4,14 +4,35 @@ Created on Apr 15, 2013
 @author: gena
 '''
 import numpy as np
-import scipy as sc
 import pylab as plb
 import time
 from scipy.optimize import fmin_bfgs  ,fmin_l_bfgs_b
 from utils import *
 
 
-def nnGrad(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
+def nnGrad(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
+        """
+          Compute the gradient using backpropagation
+          
+          Parameters
+          ----------
+          W: array-like, shape = ((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses))
+             Weights of in the network
+          
+          X: array-like, shape = (nSamples,nFeatures+1)
+             input data
+          
+          y: array-like, shape = (nSamples,nClasses)
+             input data labels
+             
+          lambda_: int
+             regularization parameter
+           
+          func: tuple
+              func[0] - activation function
+              func[1] - gradient of the activation function
+                     
+        """
         
         start_time = time.time()
         w1 = np.reshape(W[0:(nFeatures+1)*hidden_layer_size],\
@@ -21,6 +42,9 @@ def nnGrad(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
                         ((hidden_layer_size+1),nClasses))
         
         # print str(elapsed_time) + " reshape"
+        
+        activation_function = func[0]
+        grad = func[1]
             
         start_time = time.time()
         m = float(len(X))
@@ -37,12 +61,12 @@ def nnGrad(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
         #startTime = time.time()
         
         z_2 = np.dot(X,w1)
-        a_2 = addOnes(f(z_2))
+        a_2 = addOnes(activation_function(z_2))
         z_3 = np.dot(a_2,w2)
-        a_3 = f(z_3)
+        a_3 = activation_function(z_3)
         
         delta_3 = a_3-y
-        delta_2 = np.dot(w2,delta_3.T)*sigmoidGradient(addOnes(z_2)).T
+        delta_2 = np.dot(w2,delta_3.T)*grad(addOnes(z_2)).T
         
         ##grad = np.zeros_like(W)
         #for j in range(0,int(m)):
@@ -77,15 +101,30 @@ def nnGrad(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
 
 
     
-def nnCostFunction(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
+def nnCostFunction(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
         """
         Regularized cost function for one hidden layer neural network 
         
-        W is the [1 x (nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses] 
-                 weight matrix for all layers
-        f is the activation function
-        y is [nSamples x nClasses] {0,1} matrix
-        """  
+        Parameters
+          ----------
+          W: array-like, shape = ((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses))
+             Weights of in the network
+          
+          X: array-like, shape = (nSamples,nFeatures+)
+             input data
+          
+          y: array-like, shape = (nSamples,nClasses)
+             input data labels
+             
+          lambda_: int
+             regularization parameter
+           
+          func: tuple
+              func[0] - activation function
+              func[1] - gradient of the activation function
+        """ 
+        f = func[0]
+                
         w1 = np.reshape(W[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))
         
@@ -113,36 +152,50 @@ def batchCostFunction(W,X,y,lambda_,f,nFeautures,hidden_layer_size,nClasses,numB
     
 
 def nnPredict(w1,w2,X,f):
-    """
-    w1 is [(nFeatures+1) x hidden_layer_size] input layer weight matrix
-    w2 is [(hidden_layer_size+1)*nClasses]
+    """Forward propagation through the network
+    
+    Parameters
+    ----------
+    w1 : array-like, shape = ((nFeatures+1) , hidden_layer_size)
+        first layer weight matrix
+    
+    w2 :array-like,shape =  ((hidden_layer_size+1),nClasses)
+        second layer weight matrix
+        
     f  is the activation function
     """
+    
     res1 = f(np.dot(X,w1))
     res1 = addOnes(res1)
-    
     return f(np.dot(res1,w2))
 
-def nnBatchPredict(X,W,f,nFeatures,hidden_layer_size,nClasses,nBatches,batchSize):
-    #TODO implement the case if the number of batches do not split equally training sample
+def nnBatchPredict(X,W,func,nFeatures,hidden_layer_size,nClasses,nBatches,batchSize):
+    
     w1 = np.reshape(W[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))
         
     w2 = np.reshape(W[(nFeatures+1)*hidden_layer_size:],\
                         ((hidden_layer_size+1),nClasses))
     
-    res  =  np.zeros((nBatches,batchSize,nClasses)) 
+    res  =  list()
+    f = func[0]
     for i in range(0,nBatches):
-        res[i] = nnPredict(w1,w2,X[i],f)
+        res.append(nnPredict(w1,w2,X[i],f))
     
     return res
         
 
 def pedictionError(y,y_pred,numBatches,nSamples):
-    """
-    compute the error rate
-    y is the ground truth
-    y_pred is prediction
+    """Computes the error rate
+    
+    Parameters
+    ----------
+    y:array-like,shape = (nSamples,nClasses)
+       the ground truth
+    
+    y_pred: array-like,shape = (nSamples,nClasses)
+       predictions
+       
     """
     sum = 0
     for i in range(0,numBatches):
@@ -150,36 +203,67 @@ def pedictionError(y,y_pred,numBatches,nSamples):
     return 1 - float(sum)/nSamples
     
 
-def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSize,lambda_):
-    """
-    Performs the batch gradient descent to learn w
-    alpha is the learning parameter
-    w is  nfeatures x nclasses
+def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSize,lambda_,method):
+    """ Performs mini-batch learning
+    
+    Parameters
+    ----------
+    X: array-like, shape = (nSamples,nFeatures+1)
+        Training data
+    
+    y: array-like, shape = (nSamples,nClasses)
+        Training labels
+    
+    X_val: array-like, shape = (nSamples,nFeatures+1)  
+        Validation data
+        
+    y: array-like, shape = (nSamples,nClasses)
+        Validation labels
+        
+    X_val: array-like, shape = (nSamples,nFeatures+1)  
+        Test data
+        
+    y: array-like, shape = (nSamples,nClasses)
+        Test labels  
+        
+    alpha: float
+        The learning parameter
+    
+    method: str
+        Learning method (rmsprop,momentum,lbfs)
+        
+    func: str
+       Name of the activation function
     """    
+
+    plb.figure(figsize = (10,8))
 
     plb.figure(1)
     pl1 =  plb.subplot(211)
     pl2 =  plb.subplot(212)
-    #pl3 =  plb.subplot(133)
+    
+    p1 = plb.Rectangle((0, 0), 1, 1, fc="r")
+    p2 = plb.Rectangle((0, 0), 1, 1, fc="g")
+    p3 = plb.Rectangle((0, 0), 1, 1, fc="b")
+    
+    pl1.legend([p1], ["Cost function"])
+    pl2.legend([p1,p2,p3], ["Training error rate","Test error rate","Validation error rate"])
+    
     plb.ion()
     plb.show()
+    
     
     n_val = np.size(X_val,0)
     n_test = np.size(X_t,0)
     n_tr = np.size(X,0)
      
-     
-    print "preallocate error arrays" 
-    
-#     error_train = list()
-#     error_validation = list()
-#     error_test = list()
+    #preallocate error errays
     cost_train = np.zeros((num_iters))
     error_train = np.zeros((num_iters))
     error_validation = np.zeros((num_iters))
     error_test = np.zeros((num_iters))
      
-    print "create batches" 
+    # create batches 
     X_,y_ = createBatches(X,y,batchSize)
     X_val_,y_val_  = createBatches(X_val,y_val,batchSize)
     X_t_,y_t_ = createBatches(X_t,y_t,batchSize)
@@ -194,7 +278,17 @@ def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSiz
       
     m = len(X_)
        
-    print "Run training"  
+    # Training
+    print func
+    
+    if func == "sigmoid":
+        f = (sigmoid,sigmoidGradient)
+    elif fun == "tanh":
+        f = (tanh,tanhGradient) 
+    else:
+        print "Unknown activation function"
+        import sys
+        sys.exit()         
     
     def rmsprop(X,y,w):
         meanSqr = np.ones_like(w)
@@ -227,6 +321,18 @@ def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSiz
                            ,m=10, factr=1e7, pgtol=1e-5,epsilon=1e-8,iprint=0,disp = 1,maxfun=15000, maxiter=50)
             w = res[0]       
         return w
+    
+    if method == "rmsprop":
+        training = rmsprop
+    elif method == "momentum":
+        training = momentum
+    elif method == "lbfs":   
+        training = lbfs
+    else:
+        print "Unkown training method"
+        import sys
+        sys.exit()    
+             
    
     for i in range(1,num_iters+1):
         print "epoch: " + str(i)
@@ -236,12 +342,9 @@ def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSiz
         cost_train[i-1] = batchCostFunction(w_,X_,y_,lambda_,f,\
                                              nFeatures,hidden_layer_size,nClasses,m)
          
-             
-        #elapsed_time = time.time() - start_time
-        #print "[ "+str(i)+" ]"
+      
         print "cost: " + str(cost_train[i-1])
-        
-                
+                   
         err1 = pedictionError(y_,\
              nnBatchPredict(X_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_),batchSize),len(X_),n_tr)
           
@@ -258,11 +361,9 @@ def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSiz
         
         if i!=1:
             pl1.plot(range(0,i),cost_train[0:i], 'r')
-         
             pl2.plot(range(0,i),error_train[0:i], 'r')
             pl2.plot(range(0,i),error_validation[0:i], 'b')
             pl2.plot(range(0,i),error_test[0:i], 'g')
-         
             plb.draw()
          
         #elapsed_time = time.time() - start_time          
