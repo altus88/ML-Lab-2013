@@ -12,7 +12,7 @@ from nnNetwork import *
 import cPickle,gzip
 
 print "download data"
-f = gzip.open('mnist.pkl.gz', 'rb')
+f = gzip.open('/home/gena/lab/data/mnist.pkl.gz', 'rb')
 train_set, valid_set, test_set = cPickle.load(f)
 f.close()
 
@@ -51,10 +51,10 @@ lambda_ = np.array([0])
  
 del train_set,valid_set,test_set #release memory
 
-hidden_layer_size = 380
-alpha = 0.1
-num_iters = 1000
-batchSize = 1000
+hidden_layer_size = 300
+alpha = 0.001
+num_iters = 1
+batchSize = 250
  
 w = train(sigmoid,X,y,X_v,y_v,X_t,y_t,\
           hidden_layer_size, alpha, num_iters,batchSize,lambda_)

@@ -13,64 +13,67 @@ from utils import *
 
 def nnGrad(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
         
-        #start_time = time.time()
+        start_time = time.time()
         w1 = np.reshape(W[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))
         
         w2 = np.reshape(W[(nFeatures+1)*hidden_layer_size:],\
                         ((hidden_layer_size+1),nClasses))
         
-        #elapsed_time = time.time() - start_time 
-        
-        
-       # print str(elapsed_time) + " reshape"
-        
-        
+        # print str(elapsed_time) + " reshape"
+            
         start_time = time.time()
-        m = len(X)
+        m = float(len(X))
         DELTA_1 = np.zeros((nFeatures+1,hidden_layer_size))
         DELTA_2 = np.zeros((hidden_layer_size+1,nClasses))
         
         
-        w1_grad = np.mat(np.zeros((nFeatures+1,hidden_layer_size)))
-        w2_grad = np.mat(np.zeros((hidden_layer_size+1,nClasses)))
+        w1_grad = np.zeros((nFeatures+1,hidden_layer_size))
+        w2_grad = np.zeros((hidden_layer_size+1,nClasses))
         
-        delta_3 = np.zeros((1,nClasses),np.float96)
-        delta_2 = np.zeros((nFeatures+1,1),np.float96)
+        delta_3 = np.zeros((1,nClasses))
+        delta_2 = np.zeros((nFeatures+1,1))
         
-        #a_3 = nnPredict(w1, w2, X, f)
-        #z_2 = np.mat(np.dot(X,w1))
-        #a_2 =  addOnes(np.mat(f(z_2)))
+        #startTime = time.time()
+        
+        z_2 = np.dot(X,w1)
+        a_2 = addOnes(f(z_2))
+        z_3 = np.dot(a_2,w2)
+        a_3 = f(z_3)
+        
+        delta_3 = a_3-y
+        delta_2 = np.dot(w2,delta_3.T)*sigmoidGradient(addOnes(z_2)).T
         
         ##grad = np.zeros_like(W)
+        #for j in range(0,int(m)):
+#             a_1 = np.atleast_2d(X[j,:])
+#             z_2 = np.atleast_2d(np.dot(a_1,w1))
+#             a_2 = np.atleast_2d(f(z_2))
+#             a_2 = addOnes(a_2)
+#             z_3 = np.dot(a_2,w2)
+#             a_3 = f(z_3)
+            #delta_3 = (a_3-y[j,:])
+            #delta_2 = np.dot(w2,delta_3.T)*sigmoidGradient(addOnes(z_2)).T
+            #DELTA_1 = DELTA_1 + np.dot(np.atleast_2d(delta_2[1:,j]).T,np.atleast_2d(X[j,:])).T
+            #DELTA_2 = DELTA_2 + np.dot(np.atleast_2d(a_2[j,:]).T,np.atleast_2d(delta_3[j,:]))
         
-        for j in range(0,m):
-            a_1 = X[j,:]
-            z_2 = np.mat(np.dot(a_1,w1))
-            a_2 = np.mat(f(z_2))
-            a_2 = addOnes(a_2)
-            z_3 = np.dot(a_2,w2)
-            a_3 = f(z_3)
-            delta_3 = (a_3-y[j,:])
-            delta_2 = np.multiply(np.dot(np.mat(w2),delta_3.T),sigmoidGradient(addOnes(z_2)).T)
-            DELTA_1 = DELTA_1 + np.dot(np.mat(delta_2[1:len(delta_2)]),np.mat(a_1)).T
-            DELTA_2 = DELTA_2 + np.dot(a_2.T,delta_3)
+        #if batch size is not higher then 2000
+        DELTA_1 = sum(map(lambda x,y: np.dot(np.atleast_2d(x).T,np.atleast_2d(y)).T,delta_2[1:,:].T,X))
+        DELTA_2 = sum(map(lambda x,y: np.dot(np.atleast_2d(x).T,np.atleast_2d(y)),a_2,delta_3))
+                
+        #add first row since we do not regularize it
+        w1_grad[0,:] = DELTA_1[0,:]/m
+        w2_grad[0,:] = DELTA_2[0,:]/m
         
-        #add first column since we do not regularize it
-        w1_grad[:,0] = DELTA_1[:,0]/m
-        w2_grad[:,0] = DELTA_2[:,0]/m
-        
-        w1_grad[:,1:np.size(w1_grad,1)] = DELTA_1[:,1:np.size(DELTA_1,1)]/m+\
-                                        (lambda_/m)*w1[:,1:np.size(w1,1)]
-        w2_grad[:,1:np.size(w2,1)] = DELTA_2[:,1:np.size(DELTA_2,1)]/m+\
-     (lambda_/m)*w2[:,1:np.size(w2,1)]
+        w1_grad[1:,:] = DELTA_1[1:,:]/m + (lambda_/m)*w1[1:,:]
+        w2_grad[1:,:] = DELTA_2[1:,:]/m +  (lambda_/m)*w2[1:,:]
  
         grad = np.concatenate((w1_grad.ravel(),w2_grad.ravel()),1)
         
-        elapsed_time = time.time() - start_time 
-        print str(elapsed_time) + "Computing gradient"
+        #elapsed_time = time.time() - start_time 
+        #print str(elapsed_time) + " Computing gradient"
         
-        return np.array(grad)[0]
+        return grad
 
 
     
@@ -88,16 +91,16 @@ def nnCostFunction(W,X,y,lambda_,f,nFeatures,hidden_layer_size,nClasses):
         
         w2 = np.reshape(W[(nFeatures+1)*hidden_layer_size:],\
                         ((hidden_layer_size+1),nClasses))
-        a_k = nnPredict(w1,w2,X,f)
-        m = len(X)
         
-        reg  = (lambda_/(2.*m))*(np.sum(np.power(w1[1:,:],2)) + np.sum(np.power(w2[1:,:],2)))
+        a_k = nnPredict(w1,w2,X,f)
+        m = float(len(X))
+        
+        reg  = (lambda_/(2*m))*(np.sum(np.power(w1[1:,:],2)) + np.sum(np.power(w2[1:,:],2)))
         
         res = 0
-        for i in range(0,m):
-            res+= -sum(np.dot(y[i,:],np.mat(np.log(a_k[i,:])).T) + np.dot((1-y[i,:]),np.log(1-a_k[i,:])))/m 
-        
-      
+        #for i in range(0,int(m)):
+            #res+= -(np.dot(y[i,:],np.log(a_k[i,:]).T) + np.dot((1-y[i,:]),np.log(1-a_k[i,:])))/m 
+        res = -(np.sum(map(np.dot,y,np.log(a_k))) + np.sum(map(np.dot,1-y,np.log(1-a_k))))/m
         return res + reg   
         
         
@@ -171,7 +174,7 @@ def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSiz
 #     error_train = list()
 #     error_validation = list()
 #     error_test = list()
-
+    cost_train = np.zeros((num_iters))
     error_train = np.zeros((num_iters))
     error_validation = np.zeros((num_iters))
     error_test = np.zeros((num_iters))
@@ -190,159 +193,131 @@ def train(f,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num_iters,batchSiz
     g = np.zeros_like(w_)  
       
     m = len(X_)
-    cost_train = np.zeros((num_iters*m))
-    
-    #rmsprop parameters
-    meanSqr = np.ones_like(w_)
-    
+       
     print "Run training"  
-    #ind = 0
-    trTime = 0
-    w_diff = np.zeros_like(w_)
-    w_old  = np.zeros_like(w_) 
-    mu = 0.6
-    #meanSqr = np.ones((m*num_iters,)) 
-    ##with precision(100):
     
-        #sf_val = 0
-    for i in range(1,num_iters):
-        for j in range(0,m):
-            start_time = time.time()
-            print "iter: " + str(j) + " epoch: " + str(i)
-            g = nnGrad(w_,X_[j],y_[j],lambda_,f,nFeatures,hidden_layer_size,nClasses)
+    def rmsprop(X,y,w):
+        meanSqr = np.ones_like(w)
+        for i in range(m):
+            print "Iter: " + str(i)
+            g = nnGrad(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses)
             meanSqr  = 0.9*meanSqr + 0.1*(np.power(g,2))
+            w = w - alpha*(g/(np.sqrt(meanSqr) + 1e-8))
+            print "Batch cost: " + str(nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses))
+        return w
+    
+    
+    def momentum(X,y,w):
+        w_diff = np.zeros_like(w)
+        w_old  = np.zeros_like(w) 
+        mu = 0.6
+        w_old = w
+        for i in range(m):
+            g = nnGrad(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses)
+            w = w- alpha*g + mu*(w_diff)
+            w_old = w
+            w_diff = w - w_old
+            print nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses)
+        return w    
             
-            #w_ = w_ - (g/np.sqrt(meanSqr))
-            w_old = w_
-            w_ = w_- alpha*g + mu*(w_diff)
-            w_diff = w_ - w_old
-            if i>1:
-                mu = 0.99
-#            res = fmin_l_bfgs_b(nnCostFunction, w_, nnGrad, \
-#                            (X_[j],y_[j],lambda_,f,nFeatures,hidden_layer_size,nClasses),0\
-#                            ,m=10, factr=1e7, pgtol=1e-5,epsilon=1e-8,iprint=0,disp = 1,maxfun=15000, maxiter=50)
-#             w_ = res[0]
-#            elapsed_time = time.time() - start_time 
-            #trTime += elapsed_time
-#            print elapsed_time   
-            print nnCostFunction(w_,X_[j],y_[j],lambda_,f,nFeatures,hidden_layer_size,nClasses)
-            if (j % (m-1) == 0):
-                err1 = pedictionError(y_,\
-             nnBatchPredict(X_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_),batchSize),len(X_),n_tr)
-                err2 = pedictionError(y_t_,\
-             nnBatchPredict(X_t_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_t_),batchSize),len(X_t_),n_val)
-
-                print "Training error :" + str(err1)
-                print "Validation error: " + str(err2)    
-#             sf_val +=f_val
-#             if ((j+1) % 10 == 0): 
-#                 cost_train[ind] = sf_val/10
-#                 sf_val = 0
-#                 ind+=1
-#                 if j!=0:
-#                     pl1.plot(range(0,ind),cost_train[0:ind], 'r')
-#                     plb.draw()
-            
-        
-            
-            #w_ = w_.T
-           
-#             res = fmin_l_bfgs_b(nnCostFunction, w_.ravel(), None, \
-#                           (X_[j],y_[j],lambda_,f,nFeatures,hidden_layer_size,nClasses),1\
-#                           ,m=10, factr=1e7, pgtol=1e-5,epsilon=1e-8,iprint=0,disp = 1)
-#             
+    def lbfs(X,y,w):
+        for i in range(m):
+            res = fmin_l_bfgs_b(nnCostFunction, w, nnGrad, \
+                            (X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses),0\
+                           ,m=10, factr=1e7, pgtol=1e-5,epsilon=1e-8,iprint=0,disp = 1,maxfun=15000, maxiter=50)
+            w = res[0]       
+        return w
+   
+    for i in range(1,num_iters+1):
+        print "epoch: " + str(i)
+        w_ = rmsprop(X_,y_,w_)
 
         
-#        cost_train[i-1] = batchCostFunction(w_,X_,y_,lambda_,f,\
-#                                             nFeatures,hidden_layer_size,nClasses,m)
-#         
-        #cost_train[i-1] = sf_val/m
-          
+        cost_train[i-1] = batchCostFunction(w_,X_,y_,lambda_,f,\
+                                             nFeatures,hidden_layer_size,nClasses,m)
+         
+             
         #elapsed_time = time.time() - start_time
         #print "[ "+str(i)+" ]"
- #       print "cost: " + str(cost_train[i-1])
+        print "cost: " + str(cost_train[i-1])
         
-        #if mod(i,10) == 0:
-        #start_time = time.time()
+                
+        err1 = pedictionError(y_,\
+             nnBatchPredict(X_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_),batchSize),len(X_),n_tr)
+          
+         
+        err2 = pedictionError(y_t_,\
+             nnBatchPredict(X_t_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_t_),batchSize),len(X_t_),n_val)
+         
+        err3 = pedictionError(y_val_,\
+             nnBatchPredict(X_val_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_val_),batchSize),len(X_val_),n_test)
+              
+        error_train[i-1] = err1
+        error_validation[i-1] = err2
+        error_test[i-1] = err3
         
-#         err1 = pedictionError(y_,\
-#             nnBatchPredict(X_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_),batchSize),len(X_),n_tr)
-#          
-#         
-#         err2 = pedictionError(y_t_,\
-#             nnBatchPredict(X_t_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_t_),batchSize),len(X_t_),n_val)
-#         
-#         err3 = pedictionError(y_val_,\
-#             nnBatchPredict(X_val_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_val_),batchSize),len(X_val_),n_test)
-#              
-#         error_train[i-1] = err1
-#         error_validation[i-1] = err2
-#         error_test[i-1] = err3
-#         
-#         if i!=1:
-#             pl1.plot(range(0,i),cost_train[0:i], 'r')
-#         
-#             pl2.plot(range(0,i),error_train[0:i], 'r')
-#             pl2.plot(range(0,i),error_validation[0:i], 'b')
-#             pl2.plot(range(0,i),error_test[0:i], 'g')
-#         
-#             plb.draw()
-#         
-#         elapsed_time = time.time() - start_time          
-#         print "Train error: " + str(err1) 
-#         print "Test error: " +  str(err2)  
-#         print "Validation error:" + str(err3)
-#         print "elapsed time for one epoch: " +  str(elapsed_time)
-
+        if i!=1:
+            pl1.plot(range(0,i),cost_train[0:i], 'r')
+         
+            pl2.plot(range(0,i),error_train[0:i], 'r')
+            pl2.plot(range(0,i),error_validation[0:i], 'b')
+            pl2.plot(range(0,i),error_test[0:i], 'g')
+         
+            plb.draw()
+         
+        #elapsed_time = time.time() - start_time          
+        print "Train error: " + str(err1) 
+        print "Test error: " +  str(err2)  
+        print "Validation error:" + str(err3)
+        #print "elapsed time for one epoch: " +  str(elapsed_time)
+    w1 = np.reshape(w_[0:(nFeatures+1)*hidden_layer_size],\
+                        ((nFeatures+1),hidden_layer_size))    
+    visualizeFilters(w1[1:,:])
     raw_input("Press ENTER to exit")    
     return w_
 
 
 
-# def showReceptiveFields(w):
-#     fig = plb.figure(2)
-#     immap = 'Greys'
-#     plb.subplot(2,5,1)
-#     plb.imshow(reshape(w[1:,0],(28,28)), cmap=immap)
-#     plb.subplot(2,5,2)
-#     plb.imshow(reshape(w[1:,1],(28,28)), cmap=immap)
-#     plb.subplot(2,5,3)
-#     plb.imshow(reshape(w[1:,2],(28,28)), cmap=immap)
-#     plb.subplot(2,5,4)
-#     plb.imshow(reshape(w[1:,3],(28,28)), cmap=immap)
-#     plb.subplot(2,5,5)
-#     plb.imshow(reshape(w[1:,4],(28,28)), cmap=immap)
-#     plb.subplot(2,5,6)
-#     plb.imshow(reshape(w[1:,5],(28,28)), cmap=immap)
-#     plb.subplot(2,5,7)
-#     plb.imshow(reshape(w[1:,6],(28,28)), cmap=immap)
-#     plb.subplot(2,5,8)
-#     plb.imshow(reshape(w[1:,7],(28,28)), cmap=immap)
-#     plb.subplot(2,5,9)
-#     plb.imshow(reshape(w[1:,8],(28,28)), cmap=immap)
-#     plb.subplot(2,5,10)
-#     plb.imshow(reshape(w[1:,9],(28,28)), cmap=immap)
-#     plb.show(fig)
-
-# X = np.array([[1,1,2],[1,3,4]])
-# y = np.array([[1, 0],[0, 1]])
-# hl = 4
-# nf = 2
-# nClasses = 2
-#  
-# sw1 = (nf+1)*hl
-# sw2 = (hl+1)*nClasses
-# #w1 = np.ones((sw1,))
-# #w2 = np.ones((sw2,))*2
-# w1 = np.array([1,2,3,4,5,6,7,8,9,10,11,12])
-# w2 = np.array([13,14,15,16,17,18,19,20,21,22]) 
-# 
-# w = np.concatenate((w1,w2))
- 
- 
-
- 
-#print nnCostFunction(w,X,y,0,sigmoid,nf,hl,nClasses)
+def visualizeFilters(W,fig_size=(8, 8)):
+    W = W - np.mean(W) #rescale
+    l,m = np.shape(W)
+    nCols = int(np.ceil(np.sqrt(m)))
+    nRows = nCols
+    diff = m - np.power(nCols,2)
+    
+    if diff != 0:
+        if diff > 0: #we should add rows
+            md = diff / nCols
+            nRows = nRows + md + int((diff - md) > 0)
+        else:
+            md = np.abs(diff) / nCols
+            nRows = nRows - md 
+             
+    pw=np.sqrt(l)
+    ph = pw
+    
+    hs = 2
+    ws = 2
+    
+    fig1 = plb.figure(num=None, figsize = fig_size, dpi=80, facecolor='w', edgecolor='k')
+   
+    arr = np.ones((nRows*ph + (nRows + 1)*hs,nCols*pw + (nCols+1)*ws))*-1
+    immap = 'Greys'
+       
+    k = 0
+    for i in range(0,nRows):
+        diff = m - nCols*(i+1)
+        nC = int(diff>0)*nCols + (nCols - np.abs(diff))*int(diff<0)
+        for j in range(0,nC):
+            norm=np.max(np.abs(W[:,k]));
+            p1 = i*ph + hs*(i+1)
+            p2 = j*pw + ws*(j+1)
+            arr[p1:p1+ph,p2:p2+pw] = np.reshape(W[:,k],(pw,ph))/norm
+            k+=1
+    
+    plb.imshow(arr, cmap=immap)
+    plb.tight_layout()
+    plb.show(fig1)
 
 
 
