@@ -21,7 +21,13 @@ def tanhGradient(x):
     return 1 - np.power(tanh(x),2) 
 
 def sigmoidGradient(x):
-    return np.multiply(sigmoid(x),1 - sigmoid(x))        
+    return np.multiply(sigmoid(x),1 - sigmoid(x)) 
+
+def softplus(X):
+    return np.log(1 + np.exp(X))
+
+def softPlusGrad(x):
+    return sigmoid(x)        
 
 def addOnes(X):
     return np.c_[np.ones(len(X)),X]

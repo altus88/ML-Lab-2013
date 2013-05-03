@@ -272,7 +272,7 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
     nFeatures = np.size(X,1)-1
    
     #w_ = np.zeros(((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses,))
-    w_ = np.array(np.random.rand((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses))/100
+    w_ = np.array(np.random.rand((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses))/1000
     g = np.zeros_like(w_)  
       
     m = len(X_)
@@ -282,6 +282,8 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
         f = (sigmoid,sigmoidGradient)
     elif func == "tanh":
         f = (tanh,tanhGradient) 
+    elif func =="softplus":
+        f = (softplus,softPlusGrad)
     else:
         raise Exception("Unknown activation function")
         #import sys
