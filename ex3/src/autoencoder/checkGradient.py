@@ -22,13 +22,13 @@ def numGradient(J,w):
     return grad_     
 
 nSamples = 100
-hidden_layer_size = 20
+hidden_layer_size = 10
 nFeatures = 15
-nClasses = 10
+nClasses = 15
 
 sparsityParam = 0.01
-lambda_= 0.0001
-beta_ = 3
+lambda_=2
+beta_ = 0.1
 
 X = np.random.rand(nSamples,nFeatures)
 y = np.random.randint(nClasses,size = nSamples)
@@ -36,16 +36,17 @@ y = np.random.randint(nClasses,size = nSamples)
 f = [sigmoid,sigmoidGradient]
  
 
-lambda_ = 0
-w = np.random.rand((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses)
+
+w = np.random.rand((nFeatures+1)*hidden_layer_size + (hidden_layer_size+1)*nClasses)/1000
 y = X#mapClasses(y,nClasses)
 X = addOnes(X)
 
 grad = nnGrad(w, X, y,lambda_,sparsityParam,beta_,f, nFeatures, hidden_layer_size, nClasses)
 nmGrad = numGradient(cost(w),w)
 
-print grad
-print nmGrad
+#print cost(w)
+#print grad
+#print nmGrad
 
 print  np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
-print "Norm of the difference between numerical and analytical gradient (should be < 1e-9)"
+#print "Norm of the difference between numerical and analytical gradient (should be < 1e-9)"

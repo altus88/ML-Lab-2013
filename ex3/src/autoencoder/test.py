@@ -15,4 +15,4 @@ w1 = np.reshape(W[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))
 
 #np.savetxt('test.txt', W)
-visualizeNet(w1[1:,:])
+#visualizeNet(w1[1:,:])

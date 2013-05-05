@@ -25,6 +25,8 @@ DEFAULT_NUM_ITERS = 15
 DEFAULT_HIDDEN_LAYER_SIZE = 300
 DEFAULT_ACTIVATION_FUNCTION = "sigmoid"
 
+#TODO check if nn works with any number of hidden layers
+
 def _argparse():
     argparse = ArgumentParser(' Neural network module')
     argparse.add_argument('-lr','--alpha',type = float,default=DEFAULT_ALPHA) #learning rate

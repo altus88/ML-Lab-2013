@@ -48,15 +48,15 @@ def nnGrad(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
             
         start_time = time.time()
         m = float(len(X))
-        DELTA_1 = np.zeros((nFeatures+1,hidden_layer_size))
-        DELTA_2 = np.zeros((hidden_layer_size+1,nClasses))
+        #DELTA_1 = np.zeros((nFeatures+1,hidden_layer_size))
+        #ELTA_2 = np.zeros((hidden_layer_size+1,nClasses))
         
         
         w1_grad = np.zeros((nFeatures+1,hidden_layer_size))
         w2_grad = np.zeros((hidden_layer_size+1,nClasses))
         
-        delta_3 = np.zeros((1,nClasses))
-        delta_2 = np.zeros((nFeatures+1,1))
+        #delta_3 = np.zeros((1,nClasses))
+        #delta_2 = np.zeros((nFeatures+1,1))
         
         #startTime = time.time()
         
@@ -372,8 +372,8 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
             
         
         if i > 1: 
-            if  error_validation[-1] < bestVerr: #error rate is lower
-                bestVerr = error_validation[-1]
+            if  error_validation[i-1] < bestVerr: #error rate is lower
+                bestVerr = error_validation[i-1]
                 w_best = w_
                 if vErrorInc !=0: #zeroise counter
                     vErrorInc = 0
@@ -391,7 +391,7 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
         if vErrorInc ==  maxNumberVerrorIncrease:
             break
         #print "elapsed time for one epoch: " +  str(elapsed_time)
-    w1 = np.reshape(w_[0:(nFeatures+1)*hidden_layer_size],\
+    w1 = np.reshape(w_best[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))    
     visualizeFilters(w1[1:,:])
     raw_input("Press ENTER to exit")    
