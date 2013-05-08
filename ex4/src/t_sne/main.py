@@ -18,7 +18,7 @@ f.close()
 X = train_set[0]
 y = train_set[1]
 #calc_tsne(X[0:100])
-nSamples = 1000
+nSamples = 10000
 res = np.zeros((len(X[0:nSamples]),2))
 y_ = y[0:nSamples]
 

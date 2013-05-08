@@ -141,7 +141,7 @@ def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda
         res = fmin_l_bfgs_b(faceCostFunction, w_.ravel(), faceGradient, \
                            (X,y,lambda_,nFeatures,nClasses,batchSize),\
                            approx_grad=0,bounds=None, m=10, factr=1e7, pgtol=1e-5,\
-                           epsilon=1e-8,iprint=0, maxfun=15000, maxiter=10,\
+                           epsilon=1e-8,iprint=0, maxfun=15000, maxiter=20,\
                            disp=1, callback=None)
         return res[0]
     
@@ -149,7 +149,8 @@ def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda
         trFunction = stGrad
     elif (method == 'l_bfgs'):
         trFunction = l_bfgs_b
-        
+    else: 
+        raise Exception("Unknown learning method")    
         
     maxNumberVerrorIncrease = 10 #maximum number validation error increase        
     vErrorInc = 0
@@ -191,8 +192,8 @@ def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda
             plb.draw()
             
         if i > 1: 
-            if  error_validation[-1] < bestVerr: #error rate is lower
-                bestVerr = error_validation[-1]
+            if  error_validation[i-1] < bestVerr: #error rate is lower
+                bestVerr = error_validation[i-1]
                 w_best = w_
                 if vErrorInc !=0: #zeroise counter
                     vErrorInc = 0
@@ -314,5 +315,40 @@ def pedictionError(y,y_pred,numBatches,n):
         sum_ += np.sum(np.argmax(y[i],1) == np.argmax(y_pred[i],1))
     return 1 - float(sum_)/n
 
-
+def gradientCheck(): 
+    def cost(w):
+        w_ = np.reshape(w,(nFeatures+1,nClasses))
+        return costFunction(X,y,w_,lambda_).flatten()
+    
+    def grad(w):
+        w_ = np.reshape(w,(nFeatures+1,nClasses))
+        return computeGrad(X, y, w_, lambda_).flatten()
+    
+    def numGradient(J,w):
+        
+        e = 0.0001
+        p = np.zeros_like(w)
+        grad_ = np.zeros_like(w)
+        for i in range(np.size(w)):
+            p[i] = e
+            grad_[i] = np.divide(cost(w+p) - cost(w-p),2*e)
+            p[i] = 0
+        return grad_     
+    
+    nSamples = 100
+    nFeatures = 15
+    nClasses = 10
+    
+    X = np.random.rand(nSamples,nFeatures)
+    y = np.random.randint(nClasses,size = nSamples)
+    
+    lambda_ = 5
+    w = np.random.rand((nFeatures+1)*nClasses)
+    y = mapClasses(y)
+    X = addOnes(X)
+    
+    grad = grad(w)
+    nmGrad = numGradient(cost(w),w)
+    
+    print  np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
 

@@ -78,17 +78,16 @@ def pca(X,nComponents):
 def projectData(X,U,k):
     return np.dot(X,U[0:k,:])
 
-def scatterPlot2D(X,y):
+def scatterPlot2D(X,y,nLabels,label_names,size = (50,50)):
    
-    fig, plots = plt.subplots(10, 10)
-    fig.set_size_inches(70, 70)
+    fig, plots = plt.subplots(nLabels, nLabels)
+    fig.set_size_inches(size) 
     
-    
-    for i in range(10):
-        for j in range(10):
+    for i in range(nLabels):
+        for j in range(nLabels):
             if i > j:
                 continue
-            x_  = X[(y == i) + (y == j)]  #TODO check how it works
+            x_  = X[(y == i) + (y == j)]
             y_  = y[(y == i) + (y == j)]
             
             X_transformed = pca(x_,2)
@@ -101,10 +100,11 @@ def scatterPlot2D(X,y):
             plots[j, i].set_xticks(())
             plots[j, i].set_yticks(())
             if i == 0:
-                plots[i, j].set_title(j)
-                plots[j, i].set_ylabel(j)
+                plots[i, j].set_title(label_names[j])
+                plots[j, i].set_ylabel(label_names[j])
     #plt.tight_layout()   
-    fig.show()       
+    plt.tight_layout()
+    plt.show()      
     raw_input("Press ENTER to exit")       
             
     

@@ -42,7 +42,7 @@ def findCentroids(X,ind,K):
         x_ = X[ind[:,i] == 1]
         len_x_ = len(x_)
         #clusters.append(len_x_)
-        if len_x_ < 10: #we found small clusters
+        if len_x_ == 0: #we found small clusters
             empty_clusters.append(i)
             #print "empty clasters was found"
             continue
@@ -114,7 +114,7 @@ def runK_means(X,initial_centroids,K,num_iter):
         v_ind = cumputeCodeVector(X,centroids)
         
         centroids,v_ind= findCentroids(X,v_ind,np.size(centroids,1))
-        err = costFunction(centroids,v_ind,X)/len(X)
+        err = costFunction(centroids,v_ind,X)#/len(X)
         print "iter: " + str(i) + " err: " + str(err) + " K = " + str(np.size(centroids,1))
         sumErr +=err 
         if np.abs(err - prevErr) < eps: #
@@ -132,6 +132,10 @@ def whitening(X,e):
 def initializeClusters(nfeatures,K):
     #return np.random.normal(0,1,(nfeatures,K))*np.array(std,ndmin = 2).T + np.array(mu,ndmin = 2).T   
     return np.random.normal(0,1,(nfeatures,K))
+
+def randomSampleFromData(X,K):
+    ind =  np.random.randint(0,len(X),K)
+    return X[ind,:].T
 
 def trainMiniBatchK_means(X,initial_centroids,batch_size,num_iters):
     """Mini-Batch K-Means clustering
@@ -152,7 +156,7 @@ def trainMiniBatchK_means(X,initial_centroids,batch_size,num_iters):
         
     Returns
     -------
-    centers: ndarray, shape [nFeatures x nClusters]
+    centroids: ndarray, shape [nFeatures x nClusters]
         Returns found centroids
      
     Notes
@@ -164,7 +168,7 @@ def trainMiniBatchK_means(X,initial_centroids,batch_size,num_iters):
     centroids = initial_centroids 
     v_c = np.zeros((np.size(initial_centroids,1),)) # per-center counts
     for i in range(num_iters):
-        
+        print str(i)
         ind = np.random.randint(0,len(X),batch_size)
         x_ = X[ind,:]
         v_ind = cumputeCodeVector(np.mat(x_),centroids)
@@ -174,13 +178,25 @@ def trainMiniBatchK_means(X,initial_centroids,batch_size,num_iters):
             v_c[c_ind]+=1
             nu = 1/float(v_c[c_ind])
             centroids[:,c_ind] = (1 - nu)*centroids[:,c_ind] + nu*x_[j,:]
+            
+        if np.mod((i+1) , num_iters) == 0:
+            v_ind = cumputeCodeVector(X,centroids)
+            clusters,v_ind= findCentroids(X,v_ind,np.size(centroids,1))
+            err = costFunction(clusters,v_ind,X)/len(X)
+            print str(i) + " error: " + str(err)
+        
         
     not_empty_clusters = (v_c != 0)
-    if not all(not_empty_clusters):
-        print "found empty clusters"
-        print v_c
-        centroids = centroids[not_empty_clusters] 
-    return centroids          
+    #if not all(not_empty_clusters):
+       # print "found empty clusters"
+        #print v_c
+    #centroids = centroids[not_empty_clusters] 
+    
+    if np.size(clusters,1) != np.size(centroids[:,not_empty_clusters],1):
+        print "Not equal"    
+    return clusters
+    #return centroids[:,not_empty_clusters]           
+     
         
 
 def visualizeFilters(W):
@@ -207,7 +223,7 @@ def visualizeFilters(W):
     
     fig1 = plt.figure(num=None, figsize=(8, 8), dpi=80, facecolor='w', edgecolor='k')
    
-    arr = np.ones((nRows*ph + (nRows + 1)*hs,nCols*pw + (nCols+1)*ws))*-1
+    arr = np.ones((nRows*ph + (nRows + 1)*hs,nCols*pw + (nCols+1)*ws))
     immap = 'gray'
        
     k = 0
@@ -215,10 +231,10 @@ def visualizeFilters(W):
         diff = m - nCols*(i+1)
         nC = int(diff>0)*nCols + (nCols - np.abs(diff))*int(diff<0)
         for j in range(0,nC):
-            #norm=np.max(np.abs(W[:,k]));
+            norm=np.max(np.abs(W[:,k]));
             p1 = i*ph + hs*(i+1)
             p2 = j*pw + ws*(j+1)
-            arr[p1:p1+ph,p2:p2+pw] = np.reshape(W[:,k],(pw,ph))#/norm
+            arr[p1:p1+ph,p2:p2+pw] = np.reshape(W[:,k],(pw,ph))/norm
             k+=1
     
     plt.imshow(arr, cmap=immap)

@@ -7,7 +7,7 @@ Created on Apr 25, 2013
 from utils import *
 
 img = np.array
-nBatches = 1
+nBatches = 5
 for i in range(1,nBatches+1):
     f = open("/home/gena/lab/data/cifar-10-batches-py/data_batch_"+ str(i),"rb") 
     dict = cPickle.load(f)
@@ -26,8 +26,8 @@ X = np.reshape(img,(len(img),3,1024))
 
 nfeatures = 14*14
 
-K = 256
-num_iter = 10
+K = 400
+num_iter = 15
 
 X = np.mean(X,1)
 X,mu,std = featureNormilize(X)

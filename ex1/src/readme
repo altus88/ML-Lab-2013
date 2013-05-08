@@ -1,0 +1,35 @@
+Multinomial logistic regression
+
+The mllogreg.py is the main file. To run the code with default parameters type the following:
+
+>>python mllogreg.py 
+
+If you type:
+
+>> python mllogreg.py -gc
+
+Then you will run gradient check
+
+
+If you type:
+
+>> python mllogreg.py -h
+
+You will get the list of the possible parameters
+
+
+Additional work:
+
+If you can run L-BFGS-B algorithm from scipy.optimize
+For example:
+>> python mllogreg.py -md l_bfgs -bs 50000 -n 1 
+
+
+
+
+Required dependencies:
+1. Python 2.7.3
+2. Numpy
+3. Scipy
+4. Matplotlib
+

@@ -4,15 +4,14 @@ Created on Apr 29, 2013
 @author: gena
 '''
 from utils import *
-from sklearn.cluster import MiniBatchKMeans, KMeans
 import time
+from sklearn.cluster import MiniBatchKMeans, KMeans
 
 img = np.array
-nBatches = 1
+nBatches = 5
 for i in range(1,nBatches+1):
-    f = open("/home/gena/lab/data/cifar-10-batches-py/data_batch_"+ str(i),"rb") 
-    dict = cPickle.load(f)
-    f.close() 
+    with open("/home/gena/lab/data/cifar-10-batches-py/data_batch_"+ str(i),"rb") as f: 
+        dict = cPickle.load(f)
     if i!=1:
         img = np.append(img,dict['data'],0)
     else:
@@ -27,8 +26,8 @@ X = np.reshape(img,(len(img),3,1024))
 
 nfeatures = 14*14
 
-K = 256
-num_iter = 10
+K = 500
+num_iter = 100
 
 X = np.mean(X,1)
 X,mu,std = featureNormilize(X)
@@ -41,12 +40,25 @@ X_ = np.array(map(rescale,X))
 print "whitening"
 X_ = whitening(X_,0.01)
 
-initial_centroids = initializeClusters(nfeatures,K)
-batch_size = 200
-num_iters = 100
+initial_centroids = randomSampleFromData(X_,K)
+batch_size = 1000
+num_iters = 5
 
-c = trainMiniBatchK_means(X_,initial_centroids,batch_size,num_iters)
+#c = trainMiniBatchK_means(np.mat(X_),initial_centroids,batch_size,num_iters)
 
+#mbk = MiniBatchKMeans(init='k-means++', n_clusters=K, batch_size=batch_size,
+#                      n_init=num_iters, max_no_improvement=10, verbose=1)
 
+#mbk.fit(X_)
+#print "K = " +  str(np.size(c,1))
+k_means = KMeans(init='random', n_clusters=K,max_iter = 15, n_init=1,verbose=1)
+#t0 = time.time()
+k_means.fit(X_)
+
+mbk_means_labels = k_means.labels_
+print str(len(np.unique(mbk_means_labels)))
+c = k_means.cluster_centers_.T
+visualizeFilters(c)  
+raw_input("Press ENTER to exit")  
 
 
