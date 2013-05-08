@@ -232,6 +232,7 @@ def visualizeFilters(W):
     plt.imshow(arr, cmap=immap)
     plt.tight_layout()
     fig1.show()
+    
  
 def rescaleImage(X,from_,to):
     img = Image.fromarray(np.reshape(X,from_))

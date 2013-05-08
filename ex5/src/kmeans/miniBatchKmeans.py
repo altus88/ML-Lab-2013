@@ -5,7 +5,6 @@ Created on Apr 29, 2013
 '''
 from utils import *
 import time
-from sklearn.cluster import MiniBatchKMeans, KMeans
 
 img = np.array
 nBatches = 5
