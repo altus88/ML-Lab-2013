@@ -147,7 +147,7 @@ def miniBatchLearning(X,y,X_val,y_val,X_t,y_t, alpha, num_iters,batchSize,lambda
     
     if (method == 'stGrad'):
         trFunction = stGrad
-    elif (method == 'l_bfgs'):
+    elif (method == 'l_bfgs_b'):
         trFunction = l_bfgs_b
     else: 
         raise Exception("Unknown learning method")    

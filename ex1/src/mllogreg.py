@@ -20,7 +20,7 @@ def _argparse():
     argparse = ArgumentParser(' Multinomial logistic regression')
     argparse.add_argument('-lr','--alpha',type = float,default=DEFAULT_ALPHA,help='The learning rate (default: '+str(DEFAULT_ALPHA)+')') #learning rate
     argparse.add_argument('-reg','--lambda_',type = float,default = DEFAULT_LAMBDA,help='Regulazation parameter (default: '+str(DEFAULT_LAMBDA)+')') #regulazation parameter
-    argparse.add_argument('-md','--method',type = str,default = DEFAULT_METHOD,help='Learning method = {stGradm,l_bfgs} (default: '+str(DEFAULT_METHOD)+')') #learning method
+    argparse.add_argument('-md','--method',type = str,default = DEFAULT_METHOD,help='Learning method = {stGradm,l_bfgs_b} (default: '+str(DEFAULT_METHOD)+')') #learning method
     argparse.add_argument('-bs', '--batch_size', type=int, default=DEFAULT_BATCH,help='Batch size (default: '+str(DEFAULT_BATCH)+')')
     argparse.add_argument('-n', '--num_iter', type=int, default=DEFAULT_NUM_ITERS,help = 'Maximum number of iterations (default: '+str(DEFAULT_NUM_ITERS)+')')
     argparse.add_argument('-i', '--path', type=str, default=DEFAULT_PATH,help = 'Path to the MNIST data (default: '+str(DEFAULT_PATH)+')')

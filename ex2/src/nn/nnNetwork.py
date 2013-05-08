@@ -34,7 +34,6 @@ def nnGrad(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
                      
         """
         
-        start_time = time.time()
         w1 = np.reshape(W[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))
         
@@ -46,20 +45,12 @@ def nnGrad(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
         activation_function = func[0]
         grad = func[1]
             
-        start_time = time.time()
+        #start_time = time.time()
         m = float(len(X))
-        #DELTA_1 = np.zeros((nFeatures+1,hidden_layer_size))
-        #ELTA_2 = np.zeros((hidden_layer_size+1,nClasses))
-        
         
         w1_grad = np.zeros((nFeatures+1,hidden_layer_size))
         w2_grad = np.zeros((hidden_layer_size+1,nClasses))
-        
-        #delta_3 = np.zeros((1,nClasses))
-        #delta_2 = np.zeros((nFeatures+1,1))
-        
-        #startTime = time.time()
-        
+         
         z_2 = np.dot(X,w1)
         a_2 = addOnes(activation_function(z_2))
         z_3 = np.dot(a_2,w2)
@@ -68,23 +59,21 @@ def nnGrad(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
         delta_3 = a_3-y
         delta_2 = np.dot(w2,delta_3.T)*grad(addOnes(z_2)).T
         
+        if len(X)<=1000:
+            #if batch size is not higher then 1000
+            DELTA_1 = sum(map(lambda x,y: np.dot(np.atleast_2d(x).T,np.atleast_2d(y)).T,delta_2[1:,:].T,X))
+            DELTA_2 = sum(map(lambda x,y: np.dot(np.atleast_2d(x).T,np.atleast_2d(y)),a_2,delta_3))
+        else:
+            DELTA_1 = np.zeros((nFeatures+1,hidden_layer_size))
+            DELTA_2 = np.zeros((hidden_layer_size+1,nClasses))
+            #delta_3 = np.zeros((1,nClasses))
+            #delta_2 = np.zeros((nFeatures+1,1))
         ##grad = np.zeros_like(W)
-        #for j in range(0,int(m)):
-#             a_1 = np.atleast_2d(X[j,:])
-#             z_2 = np.atleast_2d(np.dot(a_1,w1))
-#             a_2 = np.atleast_2d(f(z_2))
-#             a_2 = addOnes(a_2)
-#             z_3 = np.dot(a_2,w2)
-#             a_3 = f(z_3)
-            #delta_3 = (a_3-y[j,:])
-            #delta_2 = np.dot(w2,delta_3.T)*sigmoidGradient(addOnes(z_2)).T
-            #DELTA_1 = DELTA_1 + np.dot(np.atleast_2d(delta_2[1:,j]).T,np.atleast_2d(X[j,:])).T
-            #DELTA_2 = DELTA_2 + np.dot(np.atleast_2d(a_2[j,:]).T,np.atleast_2d(delta_3[j,:]))
-        
-        #if batch size is not higher then 2000
-        DELTA_1 = sum(map(lambda x,y: np.dot(np.atleast_2d(x).T,np.atleast_2d(y)).T,delta_2[1:,:].T,X))
-        DELTA_2 = sum(map(lambda x,y: np.dot(np.atleast_2d(x).T,np.atleast_2d(y)),a_2,delta_3))
-                
+            for j in range(0,int(m)):
+                DELTA_1 = DELTA_1 + np.dot(np.atleast_2d(delta_2[1:,j]).T,np.atleast_2d(X[j,:])).T
+                DELTA_2 = DELTA_2 + np.dot(np.atleast_2d(a_2[j,:]).T,np.atleast_2d(delta_3[j,:]))
+            
+                    
         #add first row since we do not regularize it
         w1_grad[0,:] = DELTA_1[0,:]/m
         w2_grad[0,:] = DELTA_2[0,:]/m
@@ -137,9 +126,13 @@ def nnCostFunction(W,X,y,lambda_,func,nFeatures,hidden_layer_size,nClasses):
         reg  = (lambda_/(2*m))*(np.sum(np.power(w1[1:,:],2)) + np.sum(np.power(w2[1:,:],2)))
         
         res = 0
-        #for i in range(0,int(m)):
-            #res+= -(np.dot(y[i,:],np.log(a_k[i,:]).T) + np.dot((1-y[i,:]),np.log(1-a_k[i,:])))/m 
-        res = -(np.sum(map(np.dot,y,np.log(a_k))) + np.sum(map(np.dot,1-y,np.log(1-a_k))))/m
+        
+        if len(X) <= 1000:
+            res = -(np.sum(map(np.dot,y,np.log(a_k))) + np.sum(map(np.dot,1-y,np.log(1-a_k))))/m
+        else:
+            for i in range(0,int(m)):
+                res+= -(np.dot(y[i,:],np.log(a_k[i,:]).T) + np.dot((1-y[i,:]),np.log(1-a_k[i,:])))/m 
+        
         return res + reg   
         
         
@@ -292,41 +285,44 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
     def rmsprop(X,y,w):
         meanSqr = np.ones_like(w)
         for i in range(m):
-            print "Iter: " + str(i)
+            
             g = nnGrad(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses)
             meanSqr  = 0.9*meanSqr + 0.1*(np.power(g,2))
             w = w - alpha*(g/(np.sqrt(meanSqr) + 1e-8))
-            print "Batch cost: " + str(nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses))
+            print "Iter: " + str(i) + " Batch cost: " + str(nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses))
         return w
     
     
     def momentum(X,y,w):
         w_diff = np.zeros_like(w)
         w_old  = np.zeros_like(w) 
-        mu = 0.6
+        mu = 0.99
         w_old = w
         for i in range(m):
             g = nnGrad(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses)
             w = w- alpha*g + mu*(w_diff)
             w_old = w
             w_diff = w - w_old
-            print nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses)
+            print "Iter: " + str(i) + " Batch cost: " + str(nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses))
+      
         return w    
             
-    def lbfs(X,y,w):
+    def l_bfgs_b(X,y,w):
         for i in range(m):
             res = fmin_l_bfgs_b(nnCostFunction, w, nnGrad, \
                             (X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses),0\
-                           ,m=10, factr=1e7, pgtol=1e-5,epsilon=1e-8,iprint=0,disp = 1,maxfun=15000, maxiter=50)
+                           ,m=10, factr=1e7, pgtol=1e-5,epsilon=1e-8,iprint=0,disp = 1,maxfun=15000, maxiter=30)
             w = res[0]       
+            print "Iter: " + str(i) + " Batch cost: " + str(nnCostFunction(w,X[i],y[i],lambda_,f,nFeatures,hidden_layer_size,nClasses))
+      
         return w
     
     if method == "rmsprop":
         training = rmsprop
     elif method == "momentum":
         training = momentum
-    elif method == "lbfs":   
-        training = lbfs
+    elif method == "l_bfgs_b":   
+        training = l_bfgs_b
     else:
         raise Exception("Unknown training method")
         #import sys
@@ -340,15 +336,14 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
       
     for i in range(1,num_iters+1):
         print "epoch: " + str(i)
-        w_ = rmsprop(X_,y_,w_)
+        w_ = training(X_,y_,w_)
 
         
         cost_train[i-1] = batchCostFunction(w_,X_,y_,lambda_,f,\
                                              nFeatures,hidden_layer_size,nClasses,m)
          
       
-        print "cost: " + str(cost_train[i-1])
-                   
+                           
         err1 = pedictionError(y_,\
              nnBatchPredict(X_, w_,f,nFeatures,hidden_layer_size,nClasses,len(X_),batchSize),len(X_),n_tr)
           
@@ -384,6 +379,7 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
             w_best = w_  
                
         #elapsed_time = time.time() - start_time          
+        print "Cost function: " + str(cost_train[i-1])
         print "Train error: " + str(err1) 
         print "Test error: " +  str(err2)  
         print "Validation error:" + str(err3)
@@ -394,7 +390,6 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
     w1 = np.reshape(w_best[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))    
     visualizeFilters(w1[1:,:])
-    raw_input("Press ENTER to exit")    
     return w_best
 
 

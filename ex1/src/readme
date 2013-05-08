@@ -22,9 +22,11 @@ Additional work:
 
 If you can run L-BFGS-B algorithm from scipy.optimize
 For example:
->> python mllogreg.py -md l_bfgs -bs 50000 -n 1 
+>> python mllogreg.py -md l_bfgs_b -bs 50000 -n 1 
 
 
+Training stops if the validation error increases 10 times in succession
+Plots show errors after each epoch
 
 
 Required dependencies:
