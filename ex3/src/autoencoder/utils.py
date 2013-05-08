@@ -103,7 +103,7 @@ def scatterPlot2D(X,y,nLabels,label_names,size = (50,50)):
                 plots[i, j].set_title(label_names[j])
                 plots[j, i].set_ylabel(label_names[j])
     #plt.tight_layout()   
-    plt.tight_layout()
+    #plt.tight_layout()
     plt.show()      
     raw_input("Press ENTER to exit")       
             

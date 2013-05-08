@@ -27,7 +27,7 @@ nFeatures = 15
 nClasses = 15
 
 sparsityParam = 0.01
-lambda_=2
+lambda_=2 #regulirization paramterer
 beta_ = 0.1
 
 X = np.random.rand(nSamples,nFeatures)
@@ -48,5 +48,5 @@ nmGrad = numGradient(cost(w),w)
 #print grad
 #print nmGrad
 
-print  np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
-#print "Norm of the difference between numerical and analytical gradient (should be < 1e-9)"
+diff =  np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
+print "Norm of the difference between numerical and analytical gradient " + str(diff)

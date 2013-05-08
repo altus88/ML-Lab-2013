@@ -1,0 +1,9 @@
+K-Means
+
+
+test.py runs K-means on the whitened and rescaled CIFAR data.
+The amount of the clusters might be reduced since I delete the empty clusters
+
+miniBatchKmeans.py run the mini-batch K-means 
+The amount of the clusters might be reduced since I delete the empty clusters
+

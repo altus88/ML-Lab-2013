@@ -1,0 +1,44 @@
+A neural network with one hidden layer
+
+The nnNet.py is the main file. To run the code with default parameters type the following:
+
+>> python nnNet.py
+
+If you type:
+
+>> python nnNet.py -gc
+
+Then you will run gradient check
+
+If you type:
+
+>> python nnNet.py -h
+
+You will get the list of the possible parameters
+
+Additional work:
+
+You can run L-BFGS-B algorithm from scipy.optimize
+For example:
+
+>> python nnNet.py -md l_bfgs_b -bs 1000 -n 100 
+
+You can run traning with momentum:
+For example:
+>> python nnNet.py -md momentum
+
+
+
+Plots are updated after each epoch. The progress also is shown in the console
+If you run with batch size <= 1000 then the training works a bit faster since map function pluged in.
+
+The training with tanh and softplus functions is getting unstable at runtime (RuntimeWarning: invalid value encountered in log)
+The training stops if the the muximum number of iterations was achieved or validation error
+is increasing 10 times in succession 
+
+
+Required dependencies:
+1. Python 2.7.3
+2. Numpy
+3. Scipy
+4. Matplotlib

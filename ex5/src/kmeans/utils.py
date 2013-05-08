@@ -168,7 +168,7 @@ def trainMiniBatchK_means(X,initial_centroids,batch_size,num_iters):
     centroids = initial_centroids 
     v_c = np.zeros((np.size(initial_centroids,1),)) # per-center counts
     for i in range(num_iters):
-        print str(i)
+        print "Epoch: " + str(i)
         ind = np.random.randint(0,len(X),batch_size)
         x_ = X[ind,:]
         v_ind = cumputeCodeVector(np.mat(x_),centroids)
@@ -182,20 +182,12 @@ def trainMiniBatchK_means(X,initial_centroids,batch_size,num_iters):
         if np.mod((i+1) , num_iters) == 0:
             v_ind = cumputeCodeVector(X,centroids)
             clusters,v_ind= findCentroids(X,v_ind,np.size(centroids,1))
-            err = costFunction(clusters,v_ind,X)/len(X)
-            print str(i) + " error: " + str(err)
+            err = costFunction(clusters,v_ind,X)
+            print " error: " + str(err)
         
         
     not_empty_clusters = (v_c != 0)
-    #if not all(not_empty_clusters):
-       # print "found empty clusters"
-        #print v_c
-    #centroids = centroids[not_empty_clusters] 
-    
-    if np.size(clusters,1) != np.size(centroids[:,not_empty_clusters],1):
-        print "Not equal"    
-    return clusters
-    #return centroids[:,not_empty_clusters]           
+    return centroids[:,not_empty_clusters]           
      
         
 

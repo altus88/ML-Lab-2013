@@ -25,7 +25,8 @@ For example:
 >> python mllogreg.py -md l_bfgs_b -bs 50000 -n 1 
 
 
-Training stops if the validation error increases 10 times in succession
+The training stops if the the muximum number of iterations was achieved or validation error
+is increasing 10 times in succession 
 Plots show errors after each epoch
 
 

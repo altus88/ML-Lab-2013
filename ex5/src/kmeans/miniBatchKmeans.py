@@ -17,17 +17,9 @@ for i in range(1,nBatches+1):
     else:
         img = dict['data']    
     
-#img1 = dict['data']
- 
-#ind = (np.array(dict['labels']) == 1) 
- 
-#X = np.reshape(img1[ind],(np.size(np.where(ind==True)),3,1024))
 X = np.reshape(img,(len(img),3,1024))
 
 nfeatures = 14*14
-
-K = 500
-num_iter = 100
 
 X = np.mean(X,1)
 X,mu,std = featureNormilize(X)
@@ -40,24 +32,14 @@ X_ = np.array(map(rescale,X))
 print "whitening"
 X_ = whitening(X_,0.01)
 
+K = 400
 initial_centroids = randomSampleFromData(X_,K)
 batch_size = 1000
-num_iters = 5
+num_iters = 500
 
-#c = trainMiniBatchK_means(np.mat(X_),initial_centroids,batch_size,num_iters)
+c = trainMiniBatchK_means(np.mat(X_),initial_centroids,batch_size,num_iters)
 
-#mbk = MiniBatchKMeans(init='k-means++', n_clusters=K, batch_size=batch_size,
-#                      n_init=num_iters, max_no_improvement=10, verbose=1)
-
-#mbk.fit(X_)
-#print "K = " +  str(np.size(c,1))
-k_means = KMeans(init='random', n_clusters=K,max_iter = 15, n_init=1,verbose=1)
-#t0 = time.time()
-k_means.fit(X_)
-
-mbk_means_labels = k_means.labels_
-print str(len(np.unique(mbk_means_labels)))
-c = k_means.cluster_centers_.T
+print str(np.size(c,1))
 visualizeFilters(c)  
 raw_input("Press ENTER to exit")  
 

@@ -1,0 +1,9 @@
+PCA and sparse Autoencoder
+
+scatter_plot.py produce a PCA scatterplots for MNIST and CIFAR datas
+
+trainNet.py trains the autoencoder on MNIST data. 
+The training stops if the the muximum number of iterations was achieved or validation error
+is increasing 10 times in succession  
+
+checkGradient.py runs the gradient check

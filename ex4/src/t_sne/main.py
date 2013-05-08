@@ -9,7 +9,6 @@ from bhtsne import *
 import matplotlib.pyplot as plt
 import time
 
-print "download data"
 f = gzip.open('/home/gena/lab/data/mnist.pkl.gz', 'rb')
 train_set, valid_set, test_set = cPickle.load(f)
 f.close()
@@ -18,7 +17,7 @@ f.close()
 X = train_set[0]
 y = train_set[1]
 #calc_tsne(X[0:100])
-nSamples = 10000
+nSamples = 5000
 res = np.zeros((len(X[0:nSamples]),2))
 y_ = y[0:nSamples]
 

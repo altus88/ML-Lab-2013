@@ -1,0 +1,5 @@
+Runs Barnes-Hut implementation
+
+1. Compile under your system to produce bh_tsne binary
+
+Runnning main.py produces the plot on MNIST data

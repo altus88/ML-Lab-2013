@@ -15,7 +15,6 @@ from autoencoder import *
 from scipy.optimize import fmin_bfgs  ,fmin_l_bfgs_b
 
 
-print "download data"
 f = gzip.open('/home/gena/lab/data/mnist.pkl.gz', 'rb')
 train_set, valid_set, test_set = cPickle.load(f)
 f.close()
@@ -72,7 +71,7 @@ def rmsprop(X,y,w):
             g = nnGrad(w,X[i],y[i],lambda_,sparsity_param,beta,func,nFeatures,hidden_layer_size,nClasses)
             meanSqr  = 0.9*meanSqr + 0.1*(np.power(g,2))
             w = w - alpha*(g/(np.sqrt(meanSqr) + 1e-8))
-            #print "Batch cost: " + str(nnCostFunction(w_,X[i],y[i],lambda_,sparsity_param,beta,func,nFeatures,hidden_layer_size,nClasses))
+            print "Batch cost: " + str(nnCostFunction(w_,X[i],y[i],lambda_,sparsity_param,beta,func,nFeatures,hidden_layer_size,nClasses))
         return w
 
 error_validation = np.zeros(num_iters)
