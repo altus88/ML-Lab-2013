@@ -335,7 +335,7 @@ def gradientCheck():
             p[i] = 0
         return grad_     
     
-    nSamples = 100
+    nSamples = 1000
     nFeatures = 15
     nClasses = 10
     
@@ -350,5 +350,5 @@ def gradientCheck():
     grad = grad(w)
     nmGrad = numGradient(cost(w),w)
     
-    print  np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
+    return np.linalg.norm(nmGrad-grad)/np.linalg.norm(nmGrad+grad);
 
