@@ -40,15 +40,15 @@ y_v = X_v#valid_set[1][ind2]
 
 
 nFeatures = 784
-hidden_layer_size = 500
+hidden_layer_size = 300
 nClasses = 784
 
 sparsity_param = 0.01
-lambda_= 0.0001
+lambda_= 0
 beta = 3
 
 batchSize = 250
-num_iters = 50
+num_iters = 30
 alpha = 0.01
 
 func = [sigmoid, sigmoidGradient]
@@ -71,7 +71,7 @@ def rmsprop(X,y,w):
             g = nnGrad(w,X[i],y[i],lambda_,sparsity_param,beta,func,nFeatures,hidden_layer_size,nClasses)
             meanSqr  = 0.9*meanSqr + 0.1*(np.power(g,2))
             w = w - alpha*(g/(np.sqrt(meanSqr) + 1e-8))
-            print "Batch cost: " + str(nnCostFunction(w_,X[i],y[i],lambda_,sparsity_param,beta,func,nFeatures,hidden_layer_size,nClasses))
+            #print "Batch cost: " + str(nnCostFunction(w_,X[i],y[i],lambda_,sparsity_param,beta,func,nFeatures,hidden_layer_size,nClasses))
         return w
 
 error_validation = np.zeros(num_iters)

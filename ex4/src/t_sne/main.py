@@ -21,16 +21,19 @@ nSamples = 5000
 res = np.zeros((len(X[0:nSamples]),2))
 y_ = y[0:nSamples]
 
-#start_time = time.time()
-tsne_result = enumerate(bh_tsne(X[0:nSamples],30,0))
-#elsapsedTime = time.time() - start_time
 
-#print str(elsapsedTime) 
+ind = np.random.randint(0,np.size(train_set[0],0),nSamples)
+
+del train_set,valid_set,test_set
+
+tsne_result = enumerate(bh_tsne(X[0:nSamples],30,0))
+
 for j,result in tsne_result:
     res[j] = result  
     
 fig = plt.figure()
 plt.scatter(res[:, 0], res[:, 1], c=y_)
-fig.show()    
+fig.show() 
+plt.savefig("mnist_tsne.png")   
 raw_input("Press ENTER to exit")
         

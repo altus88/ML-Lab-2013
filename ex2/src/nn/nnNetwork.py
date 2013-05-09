@@ -387,8 +387,10 @@ def miniBatchLearning(func,X,y,X_val,y_val,X_t,y_t,hidden_layer_size, alpha, num
         if vErrorInc ==  maxNumberVerrorIncrease:
             break
         #print "elapsed time for one epoch: " +  str(elapsed_time)
+    plb.savefig("plots.png")
     w1 = np.reshape(w_best[0:(nFeatures+1)*hidden_layer_size],\
                         ((nFeatures+1),hidden_layer_size))    
+    
     visualizeFilters(w1[1:,:])
     return w_best
 
@@ -432,7 +434,9 @@ def visualizeFilters(W,fig_size=(8, 8)):
     
     plb.imshow(arr, cmap=immap)
     plb.tight_layout()
+    plb.savefig("filters.png")  
     plb.show(fig1)
+    
 
 def gradientCheck():
     
