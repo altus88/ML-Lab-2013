@@ -1,6 +1,6 @@
 2013-DL-GennadyShabanov
 =======================
-Code contains the following implementations:
+Code contains the following implementations (also see readme in the corresponding folders):
 
 1. Multinomial logistic regression. Evaluation of the implementation on MNIST data. Visualization of the 10 receptive fields. Plot of the error curves for the training, evaluation and test set.
 2. A neural network with one hidden layer. Minibatch gradient descent training and rmsprop. Evaluation of the implementation on MNIST. Visualization of the receptive fields of the first hidden layer, plots of the error curves. Numerical gradient check. 
